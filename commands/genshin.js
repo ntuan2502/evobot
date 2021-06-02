@@ -170,7 +170,7 @@ module.exports = {
                 data.substat,
                 data.stats(90).specialized < 1
                   ? (parseFloat(data.stats(90).specialized) * 100).toFixed(1) + "%"
-                  : data.stats(90).specialized
+                  : Math.round(data.stats(90).specialized)
               )
               .addField(data.effectname, effect);
           else embed.addField("BaseATK", Math.round(data.stats(70).attack));
