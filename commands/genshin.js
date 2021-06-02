@@ -22,16 +22,17 @@ function characterEmbed(data) {
 
 module.exports = {
   name: "genshin",
-  description: "Genshin Impact",
+  description: "talents/constellations/character/weapon/artifact + name (+ language); characters/weapons/artifacts (+ language)",
   execute(message, args) {
     try {
       var data = "";
       if (args[0] == "character") {
-        if (!args[2]) data = genshindb.characters(args[1], { resultLanguage: "EN" });
-        else {
-          if (!args[3]) data = genshindb.characters(args[1], { resultLanguage: args[2] });
-          else data = genshindb.characters(args[1], { queryLanguages: args[2], resultLanguage: args[3] });
-        }
+        if (!args[2]) data = genshindb.characters(args[1]);
+        else
+          data = genshindb.characters(args[1], {
+            queryLanguages: args[2],
+            resultLanguage: args[2]
+          });
 
         if (data === undefined) {
           message.reply("404 not found!");
@@ -40,28 +41,22 @@ module.exports = {
           message.channel.send(embed);
         }
       } else if (args[0] == "characters") {
-        data = genshindb.characters("names", { matchCategories: true });
+        if (!args[1]) data = genshindb.characters("names", { matchCategories: true });
+        else
+          data = genshindb.characters("names", {
+            matchCategories: true,
+            queryLanguages: args[1],
+            resultLanguage: args[1]
+          });
 
         message.channel.send(data.toString().replace(/,/g, ", "));
-      } else if (args[0] == "search") {
-        data = genshindb.characters(args[1], { matchCategories: true });
-
-        if (Array.isArray(data)) {
-          message.channel.send(data.toString().replace(/,/g, ", "));
-        } else {
-          if (data !== undefined) {
-            var embed = characterEmbed(data);
-            message.channel.send(embed);
-          } else {
-            message.reply("404 not found!");
-          }
-        }
       } else if (args[0] == "talents") {
-        if (!args[2]) data = genshindb.talents(args[1], { resultLanguage: "EN" });
-        else {
-          if (!args[3]) data = genshindb.talents(args[1], { resultLanguage: args[2] });
-          else data = genshindb.talents(args[1], { queryLanguages: args[2], resultLanguage: args[3] });
-        }
+        if (!args[2]) data = genshindb.talents(args[1]);
+        else
+          data = genshindb.talents(args[1], {
+            queryLanguages: args[2],
+            resultLanguage: args[2]
+          });
 
         console.log(data);
         if (data === undefined) {
@@ -103,11 +98,12 @@ module.exports = {
           message.channel.send(passive3);
         }
       } else if (args[0] == "constellations") {
-        if (!args[2]) data = genshindb.constellations(args[1], { resultLanguage: "EN" });
-        else {
-          if (!args[3]) data = genshindb.constellations(args[1], { resultLanguage: args[2] });
-          else data = genshindb.constellations(args[1], { queryLanguages: args[2], resultLanguage: args[3] });
-        }
+        if (!args[2]) data = genshindb.constellations(args[1]);
+        else
+          data = genshindb.constellations(args[1], {
+            queryLanguages: args[2],
+            resultLanguage: args[2]
+          });
 
         console.log(data);
         if (data === undefined) {
@@ -133,10 +129,13 @@ module.exports = {
           message.channel.send(c6);
         }
       } else if (args[0] == "weapon") {
-        if (!args[2]) data = genshindb.weapon(args[1], { resultLanguage: "EN" });
-        else {
-          data = genshindb.weapon(args[1], { resultLanguage: args[2] });
-        }
+        var name = args[1].replace(/-/g, "");
+        if (!args[2]) data = genshindb.weapons(name);
+        else
+          data = genshindb.weapons(name, {
+            queryLanguages: args[2],
+            resultLanguage: args[2]
+          });
 
         console.log(data);
         if (data === undefined) {
@@ -146,7 +145,7 @@ module.exports = {
           for (let i = 0; i < data.r1.length; i++) {
             effect = effect.replace(
               `{` + i + `}`,
-              "**" +
+              "***" +
                 data.r1[i] +
                 "/" +
                 data.r2[i] +
@@ -156,40 +155,100 @@ module.exports = {
                 data.r4[i] +
                 "/" +
                 data.r5[i] +
-                "**"
+                "***"
             );
           }
           var embed = new MessageEmbed()
             .setAuthor(data.weapontype)
-            .setTitle(data.name)
+            .setTitle(data.rarity > 2 ? data.name + " - 90/90" : data.name + " - 70/70")
             .setFooter(data.description);
 
-          if (args[3]) {
-            if (args[4] == "+") {
-              embed
-                .addField("BaseATK", Math.round(data.stats(args[3], "+").attack))
-                .addField(
-                  data.substat,
-                  data.stats(args[3], "+").specialized < 1
-                    ? (parseFloat(data.stats(args[3], "+").specialized) * 100).toFixed(1) + "%"
-                    : data.stats(args[3], "+").specialized
-                );
-            } else {
-              embed
-                .addField("BaseATK", Math.round(data.stats(args[3]).attack))
-                .addField(
-                  data.substat,
-                  data.stats(args[3]).specialized < 1
-                    ? (parseFloat(data.stats(args[3]).specialized) * 100).toFixed(1) + "%"
-                    : data.stats(args[3]).specialized
-                );
-            }
-          } else {
-            embed.addField("BaseATK", data.baseatk).addField(data.substat, data.subvalue);
-          }
-          embed.addField(data.effectname, effect).setThumbnail(data.images.image);
+          if (data.rarity > 2)
+            embed
+              .addField("BaseATK", Math.round(data.stats(90).attack))
+              .addField(
+                data.substat,
+                data.stats(90).specialized < 1
+                  ? (parseFloat(data.stats(90).specialized) * 100).toFixed(1) + "%"
+                  : data.stats(90).specialized
+              )
+              .addField(data.effectname, effect);
+          else embed.addField("BaseATK", Math.round(data.stats(70).attack));
+
+          embed.setThumbnail(data.images.icon);
           message.channel.send(embed);
         }
+      } else if (args[0] == "weapons") {
+        if (!args[1]) data = genshindb.weapons("names", { matchCategories: true });
+        else
+          data = genshindb.weapons("names", {
+            matchCategories: true,
+            queryLanguages: args[1],
+            resultLanguage: args[1]
+          });
+
+        message.channel.send(data.toString().replace(/,/g, ", "));
+      } else if (args[0] == "artifact") {
+        var name = args[1].replace(/-/g, "");
+        if (!args[2]) data = genshindb.artifacts(name, { matchCategories: true });
+        else
+          data = genshindb.artifacts(name, {
+            matchCategories: true,
+            queryLanguages: args[2],
+            resultLanguage: args[2]
+          });
+        console.log(data);
+
+        if (data === undefined) {
+          message.reply("404 not found!");
+        } else {
+          var name = new MessageEmbed().setTitle(data.name);
+          if (data["1pc"]) name.addField("1pc", data["1pc"]);
+          if (data["2pc"]) name.addField("2pc", data["2pc"]);
+          if (data["4pc"]) name.addField("4pc", data["4pc"]);
+          message.channel.send(name);
+
+          var flower = new MessageEmbed()
+            .setAuthor(data.flower.relictype)
+            .setTitle(data.flower.name)
+            .setDescription(data.flower.description);
+          if (data.images.flower != "") flower.setThumbnail(data.images.flower);
+          message.channel.send(flower);
+          var plume = new MessageEmbed()
+            .setAuthor(data.plume.relictype)
+            .setTitle(data.plume.name)
+            .setDescription(data.plume.description);
+          if (data.images.plume != "") plume.setThumbnail(data.images.plume);
+          message.channel.send(plume);
+          var sands = new MessageEmbed()
+            .setAuthor(data.sands.relictype)
+            .setTitle(data.sands.name)
+            .setDescription(data.sands.description);
+          if (data.images.sands != "") sands.setThumbnail(data.images.sands);
+          message.channel.send(sands);
+          var goblet = new MessageEmbed()
+            .setAuthor(data.goblet.relictype)
+            .setTitle(data.goblet.name)
+            .setDescription(data.goblet.description);
+          if (data.images.goblet != "") goblet.setThumbnail(data.images.goblet);
+          message.channel.send(goblet);
+          var circlet = new MessageEmbed()
+            .setAuthor(data.circlet.relictype)
+            .setTitle(data.circlet.name)
+            .setDescription(data.circlet.description);
+          if (data.images.circlet != "") circlet.setThumbnail(data.images.circlet);
+          message.channel.send(circlet);
+        }
+      } else if (args[0] == "artifacts") {
+        if (!args[1]) data = genshindb.artifacts("names", { matchCategories: true });
+        else
+          data = genshindb.artifacts("names", {
+            matchCategories: true,
+            queryLanguages: args[1],
+            resultLanguage: args[1]
+          });
+
+        message.channel.send(data.toString().replace(/,/g, ", "));
       } else {
         message.reply("404 not found!");
       }
