@@ -16,29 +16,38 @@ function characterEmbed(data) {
   \n English: ${data.cv.english}\n Chinese: ${data.cv.chinese}\n Japanese: ${data.cv.japanese}\n Korean: ${data.cv.korean}
   \`\`\``
     )
-    .setColor("#F8AA2A")
-    .setTimestamp());
+    .setColor("#F8AA2A"));
 }
 
 module.exports = {
   name: "genshin",
-  description: "talents/constellations/character/weapon/artifact + name (+ language); characters/weapons/artifacts (+ language)",
+  description:
+    "talents/constellations/character/weapon/artifact + name (+ source language) (+ destination language); characters/weapons/artifacts (+ language)",
   execute(message, args) {
     try {
       var data = "";
       if (args[0] == "character") {
         if (!args[2]) data = genshindb.characters(args[1]);
-        else
-          data = genshindb.characters(args[1], {
-            queryLanguages: args[2],
-            resultLanguage: args[2]
-          });
+        else {
+          if (!args[3])
+            data = genshindb.characters(args[1], {
+              queryLanguages: args[2],
+              resultLanguage: args[2]
+            });
+          else
+            data = genshindb.characters(args[1], {
+              queryLanguages: args[2],
+              resultLanguage: args[3]
+            });
+        }
 
         if (data === undefined) {
           message.reply("404 not found!");
         } else {
           var embed = characterEmbed(data);
           message.channel.send(embed);
+          // if (data.images.card && data.images.card != "")
+          //   message.channel.send((embed = new MessageEmbed().setImage(data.images.card)));
         }
       } else if (args[0] == "characters") {
         if (!args[1]) data = genshindb.characters("names", { matchCategories: true });
@@ -48,15 +57,31 @@ module.exports = {
             queryLanguages: args[1],
             resultLanguage: args[1]
           });
+        data.forEach((character) => {
+          var embed = new MessageEmbed()
+            .setTitle(character)
+            .setImage(
+              genshindb.characters(character, { queryLanguages: args[1], resultLanguage: args[1] }).images
+                .card
+            );
+          message.channel.send(embed);
+        });
 
-        message.channel.send(data.toString().replace(/,/g, ", "));
+        // message.channel.send(data.toString().replace(/,/g, ", "));
       } else if (args[0] == "talents") {
         if (!args[2]) data = genshindb.talents(args[1]);
-        else
-          data = genshindb.talents(args[1], {
-            queryLanguages: args[2],
-            resultLanguage: args[2]
-          });
+        else {
+          if (!args[3])
+            data = genshindb.talents(args[1], {
+              queryLanguages: args[2],
+              resultLanguage: args[2]
+            });
+          else
+            data = genshindb.talents(args[1], {
+              queryLanguages: args[2],
+              resultLanguage: args[3]
+            });
+        }
 
         console.log(data);
         if (data === undefined) {
@@ -99,11 +124,18 @@ module.exports = {
         }
       } else if (args[0] == "constellations") {
         if (!args[2]) data = genshindb.constellations(args[1]);
-        else
-          data = genshindb.constellations(args[1], {
-            queryLanguages: args[2],
-            resultLanguage: args[2]
-          });
+        else {
+          if (!args[3])
+            data = genshindb.constellations(args[1], {
+              queryLanguages: args[2],
+              resultLanguage: args[2]
+            });
+          else
+            data = genshindb.constellations(args[1], {
+              queryLanguages: args[2],
+              resultLanguage: args[3]
+            });
+        }
 
         console.log(data);
         if (data === undefined) {
@@ -131,11 +163,18 @@ module.exports = {
       } else if (args[0] == "weapon") {
         var name = args[1].replace(/-/g, "");
         if (!args[2]) data = genshindb.weapons(name);
-        else
-          data = genshindb.weapons(name, {
-            queryLanguages: args[2],
-            resultLanguage: args[2]
-          });
+        else {
+          if (!args[3])
+            data = genshindb.weapons(name, {
+              queryLanguages: args[2],
+              resultLanguage: args[2]
+            });
+          else
+            data = genshindb.weapons(name, {
+              queryLanguages: args[2],
+              resultLanguage: args[3]
+            });
+        }
 
         console.log(data);
         if (data === undefined) {
@@ -191,13 +230,20 @@ module.exports = {
       } else if (args[0] == "artifact") {
         var name = args[1].replace(/-/g, "");
         if (!args[2]) data = genshindb.artifacts(name, { matchCategories: true });
-        else
-          data = genshindb.artifacts(name, {
-            matchCategories: true,
-            queryLanguages: args[2],
-            resultLanguage: args[2]
-          });
-        console.log(data);
+        else {
+          if (!args[3])
+            data = genshindb.artifacts(name, {
+              matchCategories: true,
+              queryLanguages: args[2],
+              resultLanguage: args[2]
+            });
+          else
+            data = genshindb.artifacts(name, {
+              matchCategories: true,
+              queryLanguages: args[2],
+              resultLanguage: args[3]
+            });
+        }
 
         if (data === undefined) {
           message.reply("404 not found!");
@@ -248,7 +294,16 @@ module.exports = {
             resultLanguage: args[1]
           });
 
-        message.channel.send(data.toString().replace(/,/g, ", "));
+        data.forEach((artifact) => {
+          var query = genshindb.artifacts(artifact, { queryLanguages: args[1], resultLanguage: args[1] });
+          var embed = new MessageEmbed().setTitle(artifact).setThumbnail(query.images.circlet);
+          if (query["1pc"]) embed.addField("1pc", query["1pc"]);
+          if (query["2pc"]) embed.addField("2pc", query["2pc"]);
+          if (query["4pc"]) embed.addField("4pc", query["4pc"]);
+          message.channel.send(embed);
+        });
+
+        // message.channel.send(data.toString().replace(/,/g, ", "));
       } else {
         message.reply("404 not found!");
       }
