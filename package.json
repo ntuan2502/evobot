@@ -18,7 +18,7 @@
     "discord.js": "^12.5.1",
     "ffmpeg-static": "^4.2.3",
     "genshin-data": "^0.10.0",
-    "genshin-db": "^3.5.0",
+    "genshin-db": "^3.7.1",
     "i18n": "^0.13.2",
     "lyrics-finder": "^21.0.5",
     "mathjs": "^9.4.2",
