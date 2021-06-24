@@ -21,7 +21,7 @@
     "genshin-db": "^3.7.1",
     "i18n": "^0.13.2",
     "lyrics-finder": "^21.0.5",
-    "mathjs": "^9.4.2",
+    "mathjs": "^9.4.3",
     "simple-youtube-api": "^5.1.1",
     "soundcloud-downloader": "^0.2.3",
     "string-progressbar": "^1.0.3",
