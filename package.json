@@ -15,7 +15,7 @@
     "@discordjs/opus": "^0.5.3",
     "array-move": "^3.0.1",
     "axios": "^0.21.1",
-    "discord.js": "^12.5.1",
+    "discord.js": "^13.0.1",
     "ffmpeg-static": "^4.2.3",
     "genshin-data": "^0.10.0",
     "genshin-db": "^3.7.1",
